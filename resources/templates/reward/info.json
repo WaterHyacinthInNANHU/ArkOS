@@ -1,0 +1,82 @@
+{
+    "\u70b9\u51fb\u9886\u53d6": {
+        "location": [
+            1587.5,
+            209.5
+        ],
+        "resolution": [
+            1920,
+            1080
+        ],
+        "path": "reward/\u70b9\u51fb\u9886\u53d6.png",
+        "size": [
+            141,
+            73
+        ],
+        "timestamp": "2021-05-31-10:58:12"
+    },
+    "\u83b7\u5f97\u7269\u8d44": {
+        "location": [
+            963.5,
+            141.5
+        ],
+        "resolution": [
+            1920,
+            1080
+        ],
+        "path": "reward/\u83b7\u5f97\u7269\u8d44.png",
+        "size": [
+            101,
+            63
+        ],
+        "timestamp": "2021-05-31-10:58:50"
+    },
+    "reward_panel_loaded_flag": {
+        "location": [
+            626.0,
+            55.0
+        ],
+        "resolution": [
+            1920,
+            1080
+        ],
+        "path": "reward/reward_panel_loaded_flag.png",
+        "size": [
+            64,
+            62
+        ],
+        "timestamp": "2021-05-31-10:59:22"
+    },
+    "\u4efb\u52a1": {
+        "location": [
+            1140.5,
+            887.0
+        ],
+        "resolution": [
+            1920,
+            1080
+        ],
+        "path": "reward/\u4efb\u52a1.png",
+        "size": [
+            119,
+            66
+        ],
+        "timestamp": "2021-05-31-10:59:59"
+    },
+    "\u62a5\u916c\u5df2\u9886\u53d6": {
+        "location": [
+            1213.5,
+            699.5
+        ],
+        "resolution": [
+            1920,
+            1080
+        ],
+        "path": "reward/\u62a5\u916c\u5df2\u9886\u53d6.png",
+        "size": [
+            291,
+            61
+        ],
+        "timestamp": "2021-05-31-11:55:15"
+    }
+}
