@@ -10,7 +10,7 @@ from collections import Mapping
 
 import ruamel.yaml
 
-CONFIG_MODE = 'op1'  # ['dev', 'release', 'op1', 'op2']
+CONFIG_MODE = 'dev'  # ['dev', 'release', 'op1', 'op2']
 
 yaml = ruamel.yaml.YAML()
 bundled = getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')
