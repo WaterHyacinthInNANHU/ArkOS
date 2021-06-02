@@ -9,13 +9,16 @@ import coloredlogs
 import cv2
 import numpy as np
 from arknights.resource import load_template, load_position, load_rectangle, RectangleData
-from arknights.imgops import pil2cv, compare_mse, scale_pos_to_local_resolution, grayscale
+from arknights.imgops import pil2cv, compare_mse, scale_pos_to_local_resolution, grayscale, enhance_contrast
 from win32api import ShellExecute
 import psutil
-from arknights.ocr import *
+from arknights.ocr import get_ocr_engine
+from arknights.ocr.common import *
 from arknights.common import singleton, NothingMatched, ClickNoEffect
 from util.flags import *
 from arknights.ocr.stage_ocr import recognize_all_screen_stage_tags
+import config
+from PIL import Image
 
 
 @singleton
@@ -200,11 +203,8 @@ class Player:
         else:
             return False
 
-    def screenshot(self, rect: RectangleData = None) -> Image:
-        if rect is None:
-            screenshot = self.adb.screenshot()
-        else:
-            screenshot = self.adb.screenshot().crop(*rect.upper_left, *rect.bottom_right)
+    def screenshot(self) -> Image:
+        screenshot = self.adb.screenshot()
         return screenshot
 
     def click_rect(self, ul_x: int, ul_y: int, dr_x: int, dr_y: int):
@@ -291,14 +291,14 @@ class Player:
             if diff < 255 ** 2 * 0.8:
                 raise ClickNoEffect
 
-    def ocr_screenshot_by_rect(self, _path_: str, lang: str = 'zh') -> OcrResult:
+    def ocr_screenshot_by_rect(self, _path_: str, lang: str = 'zh-cn') -> OcrResult:
         screenshot = self.screenshot()
         rectangle = load_rectangle(_path_)
         if rectangle is not None:
             upper_left = self._scale_pos_to_local_resolution(rectangle.resolution, rectangle.upper_left)
             bottom_right = self._scale_pos_to_local_resolution(rectangle.resolution, rectangle.bottom_right)
             screenshot = screenshot.crop((*upper_left, *bottom_right))
-        ocr_engine = OCREngine(lang)
+        ocr_engine = get_ocr_engine(lang)
         res = ocr_engine.recognize(screenshot)
         if res.text == '':
             raise NothingRecognized
@@ -315,7 +315,7 @@ class Player:
                 screen = self.screenshot()
             else:
                 rectangle = load_rectangle(rect)
-                screen = self.screenshot(rectangle)
+                screen = self.screenshot().crop((*rectangle.upper_left, *rectangle.bottom_right))
             return grayscale(screen)
 
         screen_pre = _get_screenshot()
@@ -349,3 +349,16 @@ class Player:
         res = recognize_all_screen_stage_tags(screenshot)
         return res
 
+    def compare_template_area(self, temp: str) -> float:
+        """
+        compare mse of the part of screenshot where the template locates
+        :return:
+        """
+        temp = load_template(temp)
+        screenshot = self.screenshot().crop((*temp.upper_left, *temp.bottom_right))
+        temp_img = grayscale(temp.image)
+        temp_img = enhance_contrast(temp_img)
+        screenshot = grayscale(screenshot)
+        screenshot = enhance_contrast(screenshot)
+        diff = compare_mse(screenshot, temp_img)
+        return diff

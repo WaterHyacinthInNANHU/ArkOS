@@ -1,6 +1,10 @@
 from dataclasses import dataclass, field
 from abc import ABC
 from typing import Any, List
+from os.path import dirname, realpath
+
+_dir_path = dirname(realpath(__file__))  # dictionary of this file
+OCR_PATH = _dir_path  # path to this module
 
 
 def mult_in(needles, haystack):

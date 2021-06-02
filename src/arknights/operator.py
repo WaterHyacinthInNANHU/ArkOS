@@ -88,34 +88,54 @@ class Operator(object):
         self.logger.debug('waiting for screen to be stable')
         self.player.wait_until_screen_stable(max_check, check_interval, threshold, rect)
 
+    # def _wait_on_networking(self, max_retry: int, retry_interval: float):
+    #     self.logger.debug('waiting for networking...')
+    #     assert max_retry >= 0
+    #     assert retry_interval >= 0
+    #     for _ in range(max_retry):
+    #         try:
+    #             ocr_result = self.player.ocr_screenshot_by_rect('common/networking_message', lang='zh')
+    #         except NothingRecognized:
+    #             return
+    #         else:
+    #             self.logger.debug('networking ocr detected: {}...'.format(ocr_result.text))
+    #             if ('正在' in ocr_result.text) or \
+    #                     ('反馈' in ocr_result.text) or \
+    #                     ('神经' in ocr_result.text):
+    #                 self._wait(retry_interval, mute=True)
+    #             else:
+    #                 return
+    #     else:
+    #         raise TimeoutError('time out waiting on networking')
+
     def _wait_on_networking(self, max_retry: int, retry_interval: float):
-        self.logger.debug('waiting for networking...')
+        self.logger.debug('waiting on networking...')
         assert max_retry >= 0
         assert retry_interval >= 0
         for _ in range(max_retry):
-            try:
-                ocr_result = self.player.ocr_screenshot_by_rect('common/networking_message', lang='zh')
-            except NothingRecognized:
+            if not self._is_template_on_screen('common/提交反馈至神经', on_location=True):
                 return
             else:
-                self.logger.debug('networking ocr detected: {}...'.format(ocr_result.text))
-                if ('正在' in ocr_result.text) or \
-                        ('反馈' in ocr_result.text) or \
-                        ('神经' in ocr_result.text):
-                    self._wait(retry_interval, mute=True)
-                else:
-                    return
+                self._wait(retry_interval)
         else:
             raise TimeoutError('time out waiting on networking')
 
-    def _is_template_on_screen(self, _path_: str) -> bool:
-        self.logger.debug('checking existence of template {}'.format(_path_))
-        try:
-            self.player.locate_template(_path_)
-        except NothingMatched:
-            return False
+    def _is_template_on_screen(self, _path_: str, on_location: bool = False, threshold: float = 0.1) -> bool:
+        if not on_location:
+            self.logger.debug('checking existence of template {}'.format(_path_))
+            try:
+                self.player.locate_template(_path_)
+            except NothingMatched:
+                return False
+            else:
+                return True
         else:
-            return True
+            self.logger.debug('checking existence of template {} (on location)'.format(_path_))
+            diff = self.player.compare_template_area(_path_)
+            if diff < 255 ** 2 * threshold:
+                return True
+            else:
+                return False
 
     def _drag(self, origin: tuple, movement: tuple, duration_s: float = None):
         assert duration_s > 0

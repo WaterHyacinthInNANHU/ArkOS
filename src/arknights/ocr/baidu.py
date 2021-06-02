@@ -3,7 +3,8 @@ import time
 from io import BytesIO
 import requests
 import config
-from arknights.ocr.common import *
+from .common import *
+from os.path import join
 from PIL import Image
 
 info = "baidu"
@@ -76,3 +77,19 @@ class BaiduOCR(OcrEngine):
         line = OcrLine([OcrWord(Rect(0, 0), x['words']) for x in result['words_result']])
         result = OcrResult([line])
         return result
+
+
+Engine = BaiduOCR
+
+
+def check_supported():
+    if API_KEY is None or SECRET_KEY is None:
+        return False
+    try:
+        test_engine = BaiduOCR('zh')
+        test_temp = Image.open(join(OCR_PATH, 'test_templates', '1.png'))
+        test_engine.recognize(test_temp)
+    except Exception as e:
+        print(e)
+        return False
+    return True

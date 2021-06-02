@@ -1,39 +1,48 @@
-from PIL import Image
-import config
-from .common import *
+import importlib
+from functools import lru_cache
+from .common import OcrHint, OcrLine, OcrResult, OcrWord
+
+available_engines = ['tesseract', 'windows_media_ocr', 'baidu']
+"""
+适配的 engine 列表
+一个 engine 需要实现以下接口：
+engine.info
+engine.is_online
+engine.check_supported()    # check if engine is working properly
+engine.recognize(image, lang, *, hints=None)
+
+理论上 engine 可以是任何实现以上接口的 object，此处使用 importlib.import_module 产生的模块。
+"""
 
 
-class OCREngine(OcrEngine):
-    def __init__(self, lang: str):
-        super().__init__(lang)
-        engine = config.get('ocr/engine')
-        assert engine in ['baidu']  # TODO: add more engines
-        if engine == 'baidu':
-            from arknights.ocr.baidu import BaiduOCR
-            self.engine = BaiduOCR(self.lang)
+def get_impl(name):
+    return importlib.import_module("." + name, __name__)
 
-        #   TODO: add more engines
 
-    def recognize(self, image: Image) -> OcrResult:
-        return self.engine.recognize(image)
+def _auto_impl():
+    """返回一个可用的 engine，没有可用 engine 则抛出异常"""
+    for name in available_engines:
+        try:
+            eng = get_impl(name)
+            if eng.check_supported():
+                return eng
+        except Exception:
+            pass
+    else:
+        raise RuntimeError('no available engine')
 
-    # def baidu_ocr(self, image: Image) -> dict:
-    #     client = AipOcr(self.app_id, self.app_key, self.app_secret)
-    #     result = {}
-    #
-    #     # # debug
-    #     # with open(resource, 'rb') as file:
-    #     #     img = file.read()
-    #     #     message = client.basicGeneral(img)  # 通用文字识别，每天 50 000 次免费
-    #     # message = client.basicAccurate(img)   # 通用文字高精度识别，每天 800 次免费
-    #
-    #     target_bytes = self._pil_image_to_bytes(image)
-    #     message = client.basicGeneral(target_bytes)
-    #
-    #     if len(message.get('words_result')) == 0:
-    #         raise Exception("can't find any words")
-    #     # return message.get('words_result')[0].get('words')
-    #     for msg in message.get('words_result'):
-    #         result[msg['words']] = msg['location']
-    #     return result
 
+@lru_cache()
+def get_config_impl():
+    import config
+    if config.engine == 'auto':
+        engine = _auto_impl()
+    else:
+        engine = get_impl(config.engine)
+    return engine
+
+
+@lru_cache()
+def get_ocr_engine(lang, **kwargs):
+    impl = get_config_impl()
+    return impl.Engine(lang, **kwargs)

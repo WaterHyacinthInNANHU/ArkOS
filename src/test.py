@@ -61,17 +61,17 @@
 # ls()
 
 # test operator
-from arknights.operator import Operator, ANNIHILATION_OPERATION
-from util.logger import CmdLogger
-import connector.ADBConnector
+# from arknights.operator import Operator, ANNIHILATION_OPERATION
+# from util.logger import CmdLogger
+# import connector.ADBConnector
 # connector.ADBConnector.logger = CmdLogger('adb')
-op = Operator(CmdLogger('test'))
+# op = Operator(CmdLogger('test'))
 # op.player._get_device_pid()
 # import config
 # print(op.player.is_device_online())
-op.launch_and_connect_emulator()
-op.launch_game()
-op.login()
+# op.launch_and_connect_emulator()
+# op.launch_game()
+# op.login()
 # op.navigate_to_main_panel()
 # op.navigate_to_default_annihilation()
 # op._get_warning_message_by_ocr()
@@ -132,5 +132,16 @@ op.login()
 # print('dragging')
 # player.drag((0.5, 0.5), (0.5, 0), 2)
 
+# from arknights.player import Player
+# p = Player()
+# p.connect_device()
+# p.compare_template_area('login/账号登陆')
+# pass
 
-pass
+# from arknights.operator import Operator, ANNIHILATION_OPERATION
+# from util.logger import CmdLogger
+# # import connector.ADBConnector
+# # connector.ADBConnector.logger = CmdLogger('adb')
+# op = Operator(CmdLogger('test'))
+# op.launch_and_connect_emulator()
+# op._wait_on_networking(30, 1)
