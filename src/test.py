@@ -138,10 +138,10 @@
 # p.compare_template_area('login/账号登陆')
 # pass
 
-# from arknights.operator import Operator, ANNIHILATION_OPERATION
-# from util.logger import CmdLogger
-# # import connector.ADBConnector
-# # connector.ADBConnector.logger = CmdLogger('adb')
-# op = Operator(CmdLogger('test'))
-# op.launch_and_connect_emulator()
-# op._wait_on_networking(30, 1)
+from arknights.operator import Operator, ANNIHILATION_OPERATION
+from util.logger import CmdLogger
+# import connector.ADBConnector
+# connector.ADBConnector.logger = CmdLogger('adb')
+op = Operator(CmdLogger('test'))
+op.launch_and_connect_emulator()
+op._wait_on_networking(30, 1)

@@ -9,7 +9,7 @@ import coloredlogs
 import cv2
 import numpy as np
 from arknights.resource import load_template, load_position, load_rectangle, RectangleData
-from arknights.imgops import pil2cv, compare_mse, scale_pos_to_local_resolution, grayscale, enhance_contrast
+from arknights.imgops import pil2cv, compare_mse, scale_pos_to_local_resolution, grayscale, equalize_hist
 from win32api import ShellExecute
 import psutil
 from arknights.ocr import get_ocr_engine
@@ -349,16 +349,17 @@ class Player:
         res = recognize_all_screen_stage_tags(screenshot)
         return res
 
-    def compare_template_area(self, temp: str) -> float:
+    def compare_template_in_situ(self, temp: str) -> float:
         """
         compare mse of the part of screenshot where the template locates
         :return:
         """
         temp = load_template(temp)
         screenshot = self.screenshot().crop((*temp.upper_left, *temp.bottom_right))
-        temp_img = grayscale(temp.image)
-        temp_img = enhance_contrast(temp_img)
+        temp_img = temp.image
+        temp_img = grayscale(temp_img)
+        temp_img = equalize_hist(temp_img)
         screenshot = grayscale(screenshot)
-        screenshot = enhance_contrast(screenshot)
+        screenshot = equalize_hist(screenshot)
         diff = compare_mse(screenshot, temp_img)
         return diff

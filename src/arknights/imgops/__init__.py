@@ -6,6 +6,30 @@ from PIL import Image, ImageOps
 from typing import List
 
 
+def pil2cv(pil_image):
+    if pil_image.mode == 'L':
+        open_cv_image = np.asarray(pil_image)
+    elif pil_image.mode == 'RGBA':
+        open_cv_image = cv.cvtColor(np.asarray(pil_image), cv.COLOR_RGBA2BGRA)
+    elif pil_image.mode == 'RGB':
+        open_cv_image = cv.cvtColor(np.asarray(pil_image), cv.COLOR_RGB2BGR)
+    else:
+        raise TypeError('unsupported PIL image format: {}'.format(pil_image.mode))
+    return open_cv_image
+
+
+def cv2pil(cv_img):
+    if len(cv_img.shape) == 2:
+        pil_image = Image.fromarray(cv_img)
+    elif cv_img.shape[2] == 3:
+        pil_image = Image.fromarray(cv.cvtColor(cv_img, cv.COLOR_BGR2RGB))
+    elif cv_img.shape[2] == 4:
+        pil_image = Image.fromarray(cv.cvtColor(cv_img, cv.COLOR_BGRA2RGBA))
+    else:
+        raise TypeError('unsupported array shape: {}'.format(cv_img.shape))
+    return pil_image
+
+
 def enhance_contrast(img, lower=90, upper=None):
     img = np.asarray(img, dtype=np.uint8)
     if upper is None:
@@ -14,6 +38,13 @@ def enhance_contrast(img, lower=90, upper=None):
     lut[lower:upper + 1] = np.linspace(0, 255, upper - lower + 1, endpoint=True, dtype=np.uint8)
     lut[upper + 1:] = 255
     return Image.fromarray(lut[np.asarray(img, np.uint8)])
+
+
+def equalize_hist(img: Image):
+    img = pil2cv(img)
+    img = cv.equalizeHist(img)
+    img = cv2pil(img)
+    return img
 
 
 def clear_background(img, threshold=90):
@@ -209,15 +240,6 @@ def _find_homography_test(templ, haystack):
     img = Image.fromarray(img2, 'L')
     print(pts)
     img.show()
-
-
-def pil2cv(pil_image):
-    open_cv_image = cv.cvtColor(np.asarray(pil_image), cv.COLOR_RGB2BGR)
-    return open_cv_image
-
-
-def cv2pil(cv_img, color_code=cv.COLOR_BGR2RGB):
-    return Image.fromarray(cv.cvtColor(cv_img, color_code))
 
 
 def scale_pos_to_local_resolution(local_resolution: tuple, target_resolution: tuple, target_pos: tuple or list):

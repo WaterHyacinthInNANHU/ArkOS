@@ -113,15 +113,23 @@ class Operator(object):
         assert max_retry >= 0
         assert retry_interval >= 0
         for _ in range(max_retry):
-            if not self._is_template_on_screen('common/提交反馈至神经', on_location=True):
+            if not self._is_template_on_screen('common/提交反馈至神经', in_situ=True):
                 return
             else:
                 self._wait(retry_interval)
         else:
             raise TimeoutError('time out waiting on networking')
 
-    def _is_template_on_screen(self, _path_: str, on_location: bool = False, threshold: float = 0.1) -> bool:
-        if not on_location:
+    def _is_template_on_screen(self, _path_: str, in_situ: bool = False, threshold: float = 0.1) -> bool:
+        """
+        check if template is on screen
+        :param _path_: path to load template
+        :param in_situ: set to True to compare template in-situ
+        :param threshold: Threshold for judging whether the template and in-situ screenshot are the same.
+        only takes effect while :param in_situ is set to True.
+        :return: bool
+        """
+        if not in_situ:
             self.logger.debug('checking existence of template {}'.format(_path_))
             try:
                 self.player.locate_template(_path_)
@@ -131,7 +139,7 @@ class Operator(object):
                 return True
         else:
             self.logger.debug('checking existence of template {} (on location)'.format(_path_))
-            diff = self.player.compare_template_area(_path_)
+            diff = self.player.compare_template_in_situ(_path_)
             if diff < 255 ** 2 * threshold:
                 return True
             else:
