@@ -186,7 +186,7 @@ class Player:
         else:
             self.adb.run_device_cmd(
                 "am start -n {}/{}".format(package_name, activity_name))
-            for _ in range(30):
+            for _ in range(60):
                 if not self._is_game_running():
                     self._wait(1, manlike=False)
                 else:
@@ -349,7 +349,7 @@ class Player:
         res = recognize_all_screen_stage_tags(screenshot)
         return res
 
-    def compare_template_in_situ(self, temp: str) -> float:
+    def compare_template_in_situ(self, temp: str, enhance: bool = True) -> float:
         """
         compare mse of the part of screenshot where the template locates
         :return:
@@ -358,8 +358,9 @@ class Player:
         screenshot = self.screenshot().crop((*temp.upper_left, *temp.bottom_right))
         temp_img = temp.image
         temp_img = grayscale(temp_img)
-        temp_img = equalize_hist(temp_img)
         screenshot = grayscale(screenshot)
-        screenshot = equalize_hist(screenshot)
+        if enhance:
+            temp_img = equalize_hist(temp_img)
+            screenshot = equalize_hist(screenshot)
         diff = compare_mse(screenshot, temp_img)
         return diff

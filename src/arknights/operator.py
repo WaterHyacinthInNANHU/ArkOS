@@ -1,14 +1,12 @@
 from typing import List
 import config
 from .player import Player
-from arknights.common import NothingMatched, UnknownInterface, InvalidInitialInterface, NoSufficientSanity
+from arknights.common import *
+from . import *
 from arknights.ocr.common import OcrResult, NothingRecognized
 from arknights.resource import is_template_exist
 import logging
 import time
-
-NORMAL_OPERATION = 0
-ANNIHILATION_OPERATION = 1
 
 
 def _collect_warning_info(expectation):
@@ -120,13 +118,15 @@ class Operator(object):
         else:
             raise TimeoutError('time out waiting on networking')
 
-    def _is_template_on_screen(self, _path_: str, in_situ: bool = False, threshold: float = 0.1) -> bool:
+    def _is_template_on_screen(self, _path_: str, in_situ: bool = False, threshold: float = 0.1, enhance: bool = True) \
+            -> bool:
         """
         check if template is on screen
         :param _path_: path to load template
         :param in_situ: set to True to compare template in-situ
         :param threshold: Threshold for judging whether the template and in-situ screenshot are the same.
         only takes effect while :param in_situ is set to True.
+        :param enhance: in in_situ mode, decide whether to enhance image
         :return: bool
         """
         if not in_situ:
@@ -139,7 +139,7 @@ class Operator(object):
                 return True
         else:
             self.logger.debug('checking existence of template {} (on location)'.format(_path_))
-            diff = self.player.compare_template_in_situ(_path_)
+            diff = self.player.compare_template_in_situ(_path_, enhance=enhance)
             if diff < 255 ** 2 * threshold:
                 return True
             else:
@@ -493,12 +493,13 @@ class Operator(object):
             _start_operation()
         except NoSufficientSanity:
             self.logger.debug('no sufficient sanity, return')
-            return
+            return NO_SUFFICIENT_SANITY
         if mode is ANNIHILATION_OPERATION:
             _on_annihilation(max_retry=180, retry_interval=10)
         elif mode is NORMAL_OPERATION:
             _on_normal_operation(max_retry=240, retry_interval=5)
         self.logger.debug('operation finished')
+        return SUCCESS
 
     @_collect_warning_info(TimeoutError)
     def receive_rewards(self, max_try=50):

@@ -1,5 +1,6 @@
-from arknights.operator import Operator, ANNIHILATION_OPERATION
+from arknights.operator import Operator
 from util.logger import CmdLogger
+import arknights
 import traceback
 op = Operator(CmdLogger('test'))
 op.launch_and_connect_emulator()
@@ -7,7 +8,8 @@ op.launch_and_connect_emulator()
 try:
     for _ in range(30):
         # op.operate(mode=ANNIHILATION_OPERATION)
-        op.operate()
+        if op.operate() != arknights.SUCCESS:
+            break
 except Exception as e:
     traceback.print_exc()
 

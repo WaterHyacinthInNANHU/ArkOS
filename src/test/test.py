@@ -138,10 +138,15 @@
 # p.compare_template_area('login/账号登陆')
 # pass
 
+# test _wait_on_networking
 from arknights.operator import Operator, ANNIHILATION_OPERATION
 from util.logger import CmdLogger
 # import connector.ADBConnector
 # connector.ADBConnector.logger = CmdLogger('adb')
 op = Operator(CmdLogger('test'))
 op.launch_and_connect_emulator()
-op._wait_on_networking(30, 1)
+# op._wait_on_networking(30, 1)
+while True:
+    res = op._is_template_on_screen('common/提交反馈至神经', in_situ=True)
+    print(res)
+    op._wait(1)
