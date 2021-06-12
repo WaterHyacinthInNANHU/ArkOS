@@ -24,6 +24,7 @@ bundled = getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')
 _dir_path = dirname(realpath(__file__))  # dictionary of this file
 CONFIG_PATH = join(dirname(dirname(_dir_path)), 'config')  # dictionary containing the config file
 root = dirname(_dir_path)  # path to src
+SRC_PATH = root
 
 try:
     if not bundled and os.path.exists(os.path.join(root, '.git')):
@@ -50,7 +51,7 @@ else:
 config_template = os.path.join(CONFIG_PATH, 'config-template.yaml')
 
 
-logs = os.path.join(root, '..', 'data', 'log')
+logs = os.path.join(root, '..', 'data', 'logs')
 use_archived_resources = not os.path.isdir(os.path.join(root, '..', 'resources'))
 if use_archived_resources:
     resource_archive = os.path.join(root, 'resources.zip')
@@ -104,9 +105,9 @@ def _get_instance_id_posix():
     while True:
         try:
             if i == 0:
-                filename = os.path.join(logs, 'ArknightsAutoHelper.log')
+                filename = os.path.join(logs, 'ArknightsAutoHelper.logs')
             else:
-                filename = os.path.join(logs, 'ArknightsAutoHelper.%d.log' % i)
+                filename = os.path.join(logs, 'ArknightsAutoHelper.%d.logs' % i)
             f = open(filename, 'a+b')
             f.seek(0)
             import fcntl
@@ -218,9 +219,9 @@ def get_instance_id():
 
     _instanceid = _get_instance_id()
     if _instanceid == 0:
-        logfile = os.path.join(root, 'log', 'ArknightsAutoHelper.log')
+        logfile = os.path.join(root, 'logs', 'ArknightsAutoHelper.logs')
     else:
-        logfile = os.path.join(root, 'log', 'ArknightsAutoHelper.%d.log' % _instanceid)
+        logfile = os.path.join(root, 'logs', 'ArknightsAutoHelper.%d.logs' % _instanceid)
 
     with open(logging_config_file, 'r', encoding='utf-8') as f:
         logging.config.dictConfig(yaml.load(f))

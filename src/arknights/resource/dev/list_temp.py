@@ -31,7 +31,7 @@ def remove_root(path: str, root: str, delimiter: str = '\\') -> str:
 def ls():
     # # debug
     # for json_path in find_all_file(POSITION_PATH):
-    #     log(remove_root(dirname(json_path), POSITION_PATH, '\\'))
+    #     logs(remove_root(dirname(json_path), POSITION_PATH, '\\'))
     log(' = list of all templates = ')
     for json_path in find_all_json(TEMPLATE_PATH):
         dir_name = remove_root(dirname(json_path), TEMPLATE_PATH, '\\')

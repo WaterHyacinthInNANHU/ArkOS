@@ -14,15 +14,14 @@ from win32api import ShellExecute
 import psutil
 from arknights.ocr import get_ocr_engine
 from arknights.ocr.common import *
-from arknights.common import singleton, NothingMatched, ClickNoEffect
+from arknights.common import NothingMatched, ClickNoEffect
+from util import Singleton
 from util.flags import *
-from arknights.ocr.stage_ocr import recognize_all_screen_stage_tags
 import config
 from PIL import Image
 
 
-@singleton
-class Player:
+class Player(metaclass=Singleton):
     def __init__(self):
         self.adb = None
         self.viewport = None
@@ -184,10 +183,10 @@ class Player:
             self.logger.debug('game has already launched')
             return
         else:
-            self.adb.run_device_cmd(
-                "am start -n {}/{}".format(package_name, activity_name))
             for _ in range(60):
                 if not self._is_game_running():
+                    self.adb.run_device_cmd(
+                        "am start -n {}/{}".format(package_name, activity_name))
                     self._wait(1, manlike=False)
                 else:
                     break
@@ -343,11 +342,6 @@ class Player:
         movement = (movement[0]*self.viewport[0], movement[1]*self.viewport[1])
         duration_ms = (duration_s * 1000)
         self.adb.touch_swipe2(origin, movement, duration_ms)
-
-    def stage_ocr(self):
-        screenshot = self.screenshot()
-        res = recognize_all_screen_stage_tags(screenshot)
-        return res
 
     def compare_template_in_situ(self, temp: str, enhance: bool = True) -> float:
         """

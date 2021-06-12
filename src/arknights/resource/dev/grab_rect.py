@@ -51,7 +51,7 @@ def on_mouse(event, x, y, flags, param):
         # height = abs(point1[1] -point2[1])
         # cut_img = img[min_y:min_y+height, min_x:min_x+width]
         # cv2.imwrite('lena3.jpg', cut_img)
-        # log("请按任意键结束截图")
+        # logs("请按任意键结束截图")
 
 
 def grab(save=True):

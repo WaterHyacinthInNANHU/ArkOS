@@ -1,6 +1,6 @@
 from arknights.operator import Operator, ANNIHILATION_OPERATION
-from util.logger import CmdLogger
-op = Operator(CmdLogger('test'))
+from util.logger import ConsoleLogger
+op = Operator(ConsoleLogger('test'))
 op.launch_and_connect_emulator()
 # op.launch_game()
 # op.login()

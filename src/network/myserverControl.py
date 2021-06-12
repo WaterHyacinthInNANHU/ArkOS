@@ -32,7 +32,7 @@ class ArknightsMyserver(object):
                     self.send(ws,'message',u'Arkights arknights:执行完毕')
             if(msg.find(orderlist[1])!=-1):
                 self.send(ws,'message',u'Arkights arknights:收到,打印程序log信息')
-                outputloc = r"output\\log.txt"
+                outputloc = r"output\\logs.txt"
                 with open(outputloc, "r",encoding="utf-8") as file:
                     self.send(ws,'message',file.read())
                     self.send(ws,'message',u'Arkights arknights:执行完毕')

@@ -3,7 +3,7 @@ from os import makedirs
 from json import load, dump
 import datetime
 from .common import *
-from config import root
+from config import SRC_PATH
 
 
 def mkdir(path):
@@ -12,9 +12,9 @@ def mkdir(path):
 
 
 # root: current work dictionary ......./Client/src/
-TEMPLATE_PATH = join(dirname(root), "resources\\templates")
-POSITION_PATH = join(dirname(root), "resources\\positions")
-RECTANGLE_PATH = join(dirname(root), "resources\\rectangle")
+TEMPLATE_PATH = join(dirname(SRC_PATH), "resources\\templates")
+POSITION_PATH = join(dirname(SRC_PATH), "resources\\positions")
+RECTANGLE_PATH = join(dirname(SRC_PATH), "resources\\rectangle")
 mkdir(TEMPLATE_PATH)
 mkdir(POSITION_PATH)
 mkdir(RECTANGLE_PATH)

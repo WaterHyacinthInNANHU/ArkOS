@@ -4,6 +4,7 @@ from .player import Player
 from arknights.common import *
 from . import *
 from arknights.ocr.common import OcrResult, NothingRecognized
+from arknights.ocr.stage_ocr import recognize_all_screen_stage_tags
 from arknights.resource import is_template_exist
 import logging
 import time
@@ -38,6 +39,7 @@ class Operator(object):
             self.logger = logging.getLogger('Operator')
         else:
             self.logger = logger
+        self.BASE_DELAY = float(config.get('device/base_delay'))
 
     def _wait(self, secs: float, mute=False):
         if not mute:
@@ -246,23 +248,25 @@ class Operator(object):
                 self._wait_and_click_template('login/账号登陆', max_retry=10, retry_interval=1)
                 self._wait_for_template('login/登录按钮', max_retry=10, retry_interval=1)
                 self._click_pos('login/账号')
-                self._wait(1.5)
+                self._wait(self.BASE_DELAY)
                 self._type(str(config.get('user/account')))
                 self._click_pos('login/确认输入')
-                self._wait(1.5)
+                self._wait(self.BASE_DELAY)
                 self._click_pos('login/密码')
-                self._wait(1.5)
+                self._wait(self.BASE_DELAY)
                 self._type(str(config.get('user/password')))
-                self._wait(1.5)
+                self._wait(self.BASE_DELAY)
                 self._click_pos('login/确认输入')
-                self._wait(1.5)
+                self._wait(self.BASE_DELAY)
                 self._click_template('login/登录按钮')
 
         def _wait_for_main_panel(max_retry: int, retry_interval: float):
             self.logger.debug('waiting for main panel')
             for _ in range(max_retry):
                 if self._is_template_on_screen('login/main_panel'):
-                    self._wait(5)
+                    self._wait(self.BASE_DELAY)
+                    self._wait_on_networking(max_retry=15, retry_interval=2)
+                    self._wait_until_screen_stable(max_check=10, check_interval=1)
                     if self._is_template_on_screen('login/main_panel'):
                         break
                 if self._is_template_on_screen('login/close_announcement'):
@@ -283,7 +287,7 @@ class Operator(object):
         else:
             self._click_template('login/start')
             self._wait_for_template('login/登录界面', max_retry=30, retry_interval=2)
-            self._wait(2)
+            self._wait(self.BASE_DELAY)
             self._wait_on_networking(max_retry=30, retry_interval=2)
 
             if not force_re_login:
@@ -294,12 +298,12 @@ class Operator(object):
                         _re_login()
                 else:
                     self._click_template('login/开始唤醒')
-                    self._wait(2)
+                    self._wait(self.BASE_DELAY)
                     self._wait_on_networking(15, 2)
-                    self._wait(2)
+                    self._wait(self.BASE_DELAY)
                     if self._is_template_on_screen('login/记忆已经模糊'):
                         self._click_template('login/warning')
-                        self._wait(2)
+                        self._wait(self.BASE_DELAY)
                         _re_login()
             else:
                 if self._is_template_on_screen('login/账号管理'):
@@ -313,7 +317,8 @@ class Operator(object):
             self.logger.debug('successfully logged in')
 
     def _get_checkpoints(self):
-        res = self.player.stage_ocr()
+        screenshot = self.player.screenshot()
+        res = recognize_all_screen_stage_tags(screenshot)
         return res
 
     @_collect_warning_info(TimeoutError)
@@ -325,7 +330,7 @@ class Operator(object):
             self._wait_and_click_template('navigate/main_panel/back_to_main_button', max_retry=10, retry_interval=1)
             self._wait_and_click_template('navigate/main_panel/back_to_main_button_首页', max_retry=10, retry_interval=1)
             self._wait_for_template('navigate/main_panel/main_panel_loaded_flag', max_retry=10, retry_interval=1)
-        self._wait(2)
+        self._wait(self.BASE_DELAY)
         self._wait_on_networking(max_retry=20, retry_interval=3)
         self.logger.debug('navigated to main panel')
 
@@ -406,7 +411,7 @@ class Operator(object):
                     self._click_template('operation/common/代理指挥_off')
                     self._wait_for_template('operation/common/代理指挥_on', max_retry=5, retry_interval=1)
                 self._click_template('operation/common/开始行动')
-                self._wait(1)
+                self._wait(self.BASE_DELAY)
                 self._wait_on_networking(max_retry=30, retry_interval=2)
                 self._wait_until_screen_stable(max_check=5, check_interval=2)
                 if self._is_template_on_screen('operation/common/sanity_not_sufficient_flag'):
@@ -423,7 +428,7 @@ class Operator(object):
                         else:
                             raise UnknownInterface
                 self._wait_and_click_template('operation/common/_开始行动', max_retry=10, retry_interval=1)
-                self._wait(1)
+                self._wait(self.BASE_DELAY)
                 self._wait_on_networking(max_retry=20, retry_interval=3)
 
         def _handle_warning_info():
@@ -470,17 +475,18 @@ class Operator(object):
                 _handle_warning_info()
                 if self._is_template_on_screen('operation/annihilation/作战简报'):
                     self._click_template('operation/annihilation/作战简报')
-                    self._wait_for_template('operation/annihilation/operation_finished_flag', max_retry=5,
+                    self._wait_for_template('operation/common/operation_finished_flag', max_retry=5,
                                             retry_interval=1)
-                if self._is_template_on_screen('operation/annihilation/operation_finished_flag'):
-                    self._wait(1)
+                if self._is_template_on_screen('operation/common/operation_finished_flag'):
+                    self._wait(self.BASE_DELAY)
                     self._wait_until_screen_stable(max_check=15, check_interval=1)
-                    self._click_template('operation/annihilation/operation_finished_flag')
-                    self._wait_for_template('operation/common/开始行动', max_retry=10, retry_interval=1)
-                    self._wait_until_screen_stable(max_check=15, check_interval=1)
-                    self.logger.debug('operation finished')
-                    self.logger.debug('annihilation finished')
-                    return
+                    if self._is_template_on_screen('operation/common/operation_finished_flag'):
+                        self._click_template('operation/common/operation_finished_flag')
+                        self._wait_for_template('operation/common/开始行动', max_retry=10, retry_interval=1)
+                        self._wait_until_screen_stable(max_check=15, check_interval=1)
+                        self.logger.debug('operation finished')
+                        self.logger.debug('annihilation finished')
+                        return
                 else:
                     self._wait(retry_interval, mute=True)
                     continue

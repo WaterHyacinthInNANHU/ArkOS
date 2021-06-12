@@ -41,7 +41,7 @@ if config.use_archived_resources:
                     files.append(name)
         return dirs, files
 else:
-    root = os.path.join(config.root, '..', 'resources', 'imgreco')
+    root = os.path.join(config.SRC_PATH, '..', 'resources', 'imgreco')
 
     def get_path(names):
         return os.path.join(root, *names)
