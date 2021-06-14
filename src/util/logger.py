@@ -9,13 +9,7 @@ import config
 from datetime import datetime
 from .path import touch
 import logging
-from io import StringIO
 
-
-LOGGING_LEVEL = config.get('logging/level')
-mapping = {'CRITICAL': 50, 'ERROR': 40, 'WARNING': 30, 'INFO': 20, 'DEBUG': 10}
-assert LOGGING_LEVEL in mapping.keys()
-LOGGING_LEVEL = mapping[LOGGING_LEVEL]
 LOGGING_PATH = join(config.SRC_PATH, config.get('logging/path'))
 assert isdir(LOGGING_PATH)
 
@@ -27,29 +21,8 @@ def get_logging_file() -> str:
             os.makedirs(_path)
         return _path
     t = datetime.today()
-    path = join(_get_dir(str(t.year), t.strftime("%B")),
-                t.strftime('%Y-%m-%d.log'))
-    if not isfile(path):
-        touch(path)
-    return path
-
-
-LOGGING_FILE_PATH = get_logging_file()
-logging.basicConfig(filename=LOGGING_FILE_PATH,
-                    filemode='a',
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    level=LOGGING_LEVEL)
-
-
-def get_logging_file() -> str:
-    def _get_dir(year: str, month: str) -> str:
-        _path = join(LOGGING_PATH, year, month)
-        if not isdir(_path):
-            os.makedirs(_path)
-        return _path
-    t = datetime.today()
-    path = join(_get_dir(str(t.year), t.strftime("%B")),
-                t.strftime('%Y-%m-%d.log'))
+    filename = t.strftime('%Y-%m-%d.log')
+    path = join(_get_dir(str(t.year), t.strftime("%B")), filename)
     if not isfile(path):
         touch(path)
     return path
@@ -57,26 +30,31 @@ def get_logging_file() -> str:
 
 class Logger(ABC):
     @abstractmethod
-    def info(self, s: str):
+    def info(self, msg):
         pass
 
     @abstractmethod
-    def debug(self, s: str):
+    def debug(self, msg):
         pass
 
     @abstractmethod
-    def warning(self, s: str):
+    def warning(self, msg):
         pass
 
     @abstractmethod
-    def error(self, s: str):
+    def error(self, msg):
         pass
 
 
 class DefaultLogger(Logger):
-    def __init__(self, name: str):
+    def __init__(self, name: str, level: int = logging.DEBUG):
         self.name = name
         self.logger = logging.getLogger(name)
+        self.logger.setLevel(level)
+        self.logging_file = get_logging_file()
+        handler = logging.FileHandler(self.logging_file, 'a', 'utf-8')
+        handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+        self.logger.addHandler(handler)
 
     def info(self, s: str):
         self.logger.info(s)
@@ -84,7 +62,7 @@ class DefaultLogger(Logger):
     def debug(self, s: str):
         self.logger.debug(s)
 
-    def warning(self, s):
+    def warning(self, s: str):
         self.logger.warning(s)
 
     def error(self, s: str):
@@ -93,7 +71,6 @@ class DefaultLogger(Logger):
 
 class ConsoleLogger(Logger):
     def __init__(self, name: str):
-        self.logging_stream = StringIO()
         self.format = '{asctime} - {name} - {levelname} - {message}'
         self.name = name
 
@@ -178,15 +155,15 @@ class RichLogger:
         self.f.flush()
 
 
-# @lru_cache(maxsize=None)
-# def get_logger(module):
-#     import config
-#     if config.get_instance_id() == 0:
-#         filename = '%s.html' % module
-#     else:
-#         filename = '%s.%d.html' % (module, config.get_instance_id())
-#     logger = RichLogger(os.path.join(config.logs, filename), True)
-#     return logger
+@lru_cache(maxsize=None)
+def get_logger(module):
+    import config
+    if config.get_instance_id() == 0:
+        filename = '%s.html' % module
+    else:
+        filename = '%s.%d.html' % (module, config.get_instance_id())
+    logger = RichLogger(os.path.join(config.logs, filename), True)
+    return logger
 
 # @lru_cache(maxsize=None)
 # def get_logger(module):
