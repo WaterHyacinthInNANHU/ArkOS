@@ -133,3 +133,7 @@ dmypy.json
 
 # config file
 config/config-*.yaml
+
+# log
+.log
+.log.html

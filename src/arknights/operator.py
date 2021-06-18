@@ -16,14 +16,16 @@ def _collect_warning_info(expectation):
             try:
                 result = function(self, *args, **kwargs)
             except expectation as e:
-                self.logger.debug('trying to collecting error information...'.format(e))
-                try:
-                    warning_info = self._get_warning_message_by_ocr()
-                except NothingRecognized:
-                    self.logger.debug('ocr failed, unknown error'.format(e))
-                    self.logger.error('unknown error')
-                else:
-                    self.logger.error('warning info: {}'.format(warning_info))
+                # self.logger.debug('trying to collecting error information...'.format(e))
+                # try:
+                #     warning_info = self._get_warning_message_by_ocr()
+                # except NothingRecognized:
+                #     self.logger.debug('ocr failed, unknown error'.format(e))
+                #     self.logger.error('unknown error')
+                # else:
+                #     self.logger.error('warning info: {}'.format(warning_info))
+                # raise
+                self.logger.error('exception occurs: \n {}'.format(e), self.player.screenshot())
                 raise
             return result
 
@@ -228,9 +230,30 @@ class Operator(object):
 
     @_collect_warning_info(TimeoutError)
     def launch_game(self):
+        def _handle_warning_info():
+            if self._is_template_on_screen('operation/common/error_flag'):
+                self.logger.error('error launching game', self.player.screenshot())
+                raise RuntimeError('failed to launch game')
+
+        def _handle_update(max_retries: int, retry_interval: float):
+            for _ in range(max_retries):
+                _handle_warning_info()
+                if (
+                        self._is_template_on_screen('login/正在获取更新') or
+                        self._is_template_on_screen('login/正在释放神经递质')
+                ):
+                    self._wait(self.BASE_DELAY)
+                else:
+                    return
+                self._wait(retry_interval)
+            else:
+                self.logger.error('timeout waiting for update', self.player.screenshot())
+                raise TimeoutError('timeout waiting for update')
+
         self.logger.debug('launching game...')
         self.player.ensure_game_launched()
-        # TODO: handle game update
+        # handle update
+        _handle_update(max_retries=200, retry_interval=3)
         self._wait_for_template('login/start', max_retry=20, retry_interval=3)
         self.logger.debug('game launched')
 
@@ -417,8 +440,8 @@ class Operator(object):
                 if self._is_template_on_screen('operation/common/sanity_not_sufficient_flag'):
                     self.logger.debug('sanity is not sufficient!')
                     if auto_refill:
-                        self.logger.debug('refilling sanity...')
-                        raise NotImplemented    # TODO
+                        self.logger.debug('refilling sanity...', self.player.screenshot())
+                        raise NotImplemented  # TODO
                         # self.logger.debug('sanity is refilled')
                     else:
                         if self._is_template_on_screen('operation/common/restore_sanity_cancel'):
@@ -436,9 +459,10 @@ class Operator(object):
                 self.logger.debug('error occurred, trying to collecting error information...')
                 try:
                     warning_info = self._get_warning_message_by_ocr()
-                except NothingRecognized:
-                    self.logger.debug('ocr failed, unknown error')
-                    self.logger.error('unknown error')
+                except Exception as e:
+                    self.logger.error('ocr failed, error message: {}'.format(e))
+                    self.logger.error('error interface: ', self.player.screenshot())
+                    return
                 else:
                     if '是否重试' in warning_info.text:
                         self._click_template('operation/common/error_confirm')
@@ -454,8 +478,9 @@ class Operator(object):
             for _ in range(max_retry):
                 _handle_warning_info()
                 if self._is_template_on_screen('operation/common/operation_finished_flag'):
-                    self._wait(1)
+                    self._wait(self.BASE_DELAY)
                     self._wait_until_screen_stable(max_check=15, check_interval=1)
+                    self.logger.debug('finished interface:', self.player.screenshot())
                     self._click_template('operation/common/operation_finished_flag')
                     self._wait_for_template('operation/common/开始行动', max_retry=10, retry_interval=1)
                     self._wait_until_screen_stable(max_check=15, check_interval=1)
@@ -481,6 +506,7 @@ class Operator(object):
                     self._wait(self.BASE_DELAY)
                     self._wait_until_screen_stable(max_check=15, check_interval=1)
                     if self._is_template_on_screen('operation/common/operation_finished_flag'):
+                        self.logger.debug('finished interface:', self.player.screenshot())
                         self._click_template('operation/common/operation_finished_flag')
                         self._wait_for_template('operation/common/开始行动', max_retry=10, retry_interval=1)
                         self._wait_until_screen_stable(max_check=15, check_interval=1)

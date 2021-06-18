@@ -9,7 +9,7 @@ op.launch_and_connect_emulator()
 # op.navigate_to_default_annihilation()
 # op.navigate_to_resources('粉碎防御', 'AP-5')
 try:
-    for _ in range(20):
+    for _ in range(30):
         if op.operate(mode=arknights.NORMAL_OPERATION) != arknights.SUCCESS:
             break
 except Exception as e:
