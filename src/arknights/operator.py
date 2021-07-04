@@ -133,21 +133,28 @@ class Operator(object):
         :param enhance: in in_situ mode, decide whether to enhance image
         :return: bool
         """
+        def _res_wrapper(res: bool):
+            if res:
+                self.logger.debug('template {} exists'.format(_path_))
+            else:
+                self.logger.debug('template {} not exists'.format(_path_))
+            return res
+
         if not in_situ:
             self.logger.debug('checking existence of template {}'.format(_path_))
             try:
                 self.player.locate_template(_path_)
             except NothingMatched:
-                return False
+                return _res_wrapper(False)
             else:
-                return True
+                return _res_wrapper(True)
         else:
             self.logger.debug('checking existence of template {} (on location)'.format(_path_))
             diff = self.player.compare_template_in_situ(_path_, enhance=enhance)
             if diff < 255 ** 2 * threshold:
-                return True
+                return _res_wrapper(True)
             else:
-                return False
+                return _res_wrapper(False)
 
     def _drag(self, origin: tuple, movement: tuple, duration_s: float = None):
         assert duration_s > 0
@@ -235,8 +242,8 @@ class Operator(object):
                 self.logger.error('error launching game', self.player.screenshot())
                 raise RuntimeError('failed to launch game')
 
-        def _handle_update(max_retries: int, retry_interval: float):
-            for _ in range(max_retries):
+        def _handle_update(max_retry: int, retry_interval: float):
+            for _ in range(max_retry):
                 _handle_warning_info()
                 if (
                         self._is_template_on_screen('login/正在获取更新') or
@@ -250,11 +257,30 @@ class Operator(object):
                 self.logger.error('timeout waiting for update', self.player.screenshot())
                 raise TimeoutError('timeout waiting for update')
 
+        def _wait_for_start(max_retry: int, retry_interval: float):
+            cnt = max_retry
+            while cnt > 0:
+                _handle_warning_info()
+                if (
+                        self._is_template_on_screen('login/正在获取更新') or
+                        self._is_template_on_screen('login/正在释放神经递质')
+                ):
+                    pass
+                else:
+                    if not self._is_template_on_screen('login/start'):
+                        cnt -= 1
+                    else:
+                        self.logger.debug('start icon detected')
+                        return
+                self._wait(retry_interval)
+            raise TimeoutError('timeout waiting for start icon')
+
         self.logger.debug('launching game...')
         self.player.ensure_game_launched()
         # handle update
-        _handle_update(max_retries=200, retry_interval=3)
-        self._wait_for_template('login/start', max_retry=20, retry_interval=3)
+        # _handle_update(max_retry=200, retry_interval=3)
+        # self._wait_for_template('login/start', max_retry=20, retry_interval=3)
+        _wait_for_start(max_retry=30, retry_interval=3)
         self.logger.debug('game launched')
 
     def close_emulator(self):
@@ -283,6 +309,24 @@ class Operator(object):
                 self._wait(self.BASE_DELAY)
                 self._click_template('login/登录按钮')
 
+        def _handle_announcement():
+            if self._is_template_on_screen('login/公告'):
+                self._click_template('login/公告')
+                self._wait_until_screen_stable(max_check=5, check_interval=1)
+
+        def _wait_for_login_panel(max_retry: int, retry_interval: float):
+            self.logger.debug('waiting for main panel')
+            for _ in range(max_retry):
+                if self._is_template_on_screen('login/登录界面'):
+                    self._wait(self.BASE_DELAY)
+                    self._wait_on_networking(max_retry=30, retry_interval=2)
+                    self._wait_until_screen_stable(max_check=5, check_interval=1)
+                    return
+                _handle_announcement()
+                self._wait(retry_interval, mute=True)
+            else:
+                raise TimeoutError('timeout waiting for login panel')
+
         def _wait_for_main_panel(max_retry: int, retry_interval: float):
             self.logger.debug('waiting for main panel')
             for _ in range(max_retry):
@@ -309,9 +353,8 @@ class Operator(object):
             raise InvalidInitialInterface
         else:
             self._click_template('login/start')
-            self._wait_for_template('login/登录界面', max_retry=30, retry_interval=2)
-            self._wait(self.BASE_DELAY)
-            self._wait_on_networking(max_retry=30, retry_interval=2)
+
+            _wait_for_login_panel(max_retry=30, retry_interval=2)
 
             if not force_re_login:
                 if not self._is_template_on_screen('login/开始唤醒'):
@@ -424,7 +467,10 @@ class Operator(object):
         pass
 
     @_collect_warning_info(TimeoutError)
-    def operate(self, mode: int = NORMAL_OPERATION, auto_refill: bool = False):
+    def operate(self, mode: int = NORMAL_OPERATION, auto_refill: int = DISABLED):
+        assert mode in [NORMAL_OPERATION, ANNIHILATION_OPERATION]
+        assert auto_refill in [DISABLED, AUTO_REFILL, POTION_ONLY_REFILL, GRINDSTONE_ONLY_REFILL]
+
         def _start_operation():
             if not self._is_template_on_screen('operation/common/开始行动'):
                 raise InvalidInitialInterface
@@ -439,13 +485,42 @@ class Operator(object):
                 self._wait_until_screen_stable(max_check=5, check_interval=2)
                 if self._is_template_on_screen('operation/common/sanity_not_sufficient_flag'):
                     self.logger.debug('sanity is not sufficient!')
-                    if auto_refill:
-                        self.logger.debug('refilling sanity...', self.player.screenshot())
-                        raise NotImplemented  # TODO
-                        # self.logger.debug('sanity is refilled')
+                    if auto_refill is not DISABLED:
+                        if auto_refill is AUTO_REFILL:
+                            # FIXME: unhandled condition: running out of grindstone
+                            if self._is_template_on_screen('operation/common/refill_with_potion_flag'):
+                                self.logger.info('refilling sanity with potion', self.player.screenshot())
+                            else:
+                                self.logger.info('refilling sanity with grindstone', self.player.screenshot())
+                            self._click_template('operation/common/refill_sanity_confirm')
+                            self._wait_on_networking(max_retry=20, retry_interval=1)
+                        elif auto_refill is POTION_ONLY_REFILL:
+                            self.logger.info('refilling sanity with potion', self.player.screenshot())
+                            if self._is_template_on_screen('operation/common/refill_with_potion_flag'):
+                                self._click_template('operation/common/refill_sanity_confirm')
+                                self._wait_on_networking(max_retry=20, retry_interval=1)
+                                self.logger.info('sanity is refilled with potion')
+                            else:
+                                self.logger.warning('potion is insufficient, failed to refill sanity')
+                                self._click_template('operation/common/refill_sanity_cancel')
+                                self._wait_until_screen_stable(max_check=5, check_interval=1)
+                                raise NoSufficientSanity
+                        elif auto_refill is GRINDSTONE_ONLY_REFILL:
+                            raise NotImplemented
+                            # FIXME: unhandled condition: running out of grindstone
+                            # self.logger.info('refilling sanity with grindstone', self.player.screenshot())
+                            # self._click_pos('operation/common/refill_with_grindstone')
+                            # self._wait(self.BASE_DELAY)
+                            # self._click_template('operation/common/refill_sanity_confirm')
+                            # self.logger.info('sanity is refilled with grindstone')
+                        self.logger.info('restarting operation...')
+                        self._wait_and_click_template('operation/common/开始行动', max_retry=10, retry_interval=1)
+                        self._wait(self.BASE_DELAY)
+                        self._wait_on_networking(max_retry=30, retry_interval=2)
+                        self._wait_until_screen_stable(max_check=5, check_interval=2)
                     else:
-                        if self._is_template_on_screen('operation/common/restore_sanity_cancel'):
-                            self._click_template('operation/common/restore_sanity_cancel')
+                        if self._is_template_on_screen('operation/common/refill_sanity_cancel'):
+                            self._click_template('operation/common/refill_sanity_cancel')
                             self._wait_until_screen_stable(max_check=5, check_interval=1)
                             raise NoSufficientSanity
                         else:
@@ -471,13 +546,22 @@ class Operator(object):
                         self.logger.error('warning info: {}'.format(warning_info))
                         raise RuntimeError('unhandled error during operation: {}'.format(warning_info))
 
+        def _handle_level_up():
+            if self._is_template_on_screen('operation/common/等级提升'):
+                self.logger.info('level up!')
+                self._click_template('operation/common/等级提升')
+                self._wait_until_screen_stable(max_check=5, check_interval=1)
+
         def _on_normal_operation(max_retry: int, retry_interval: float):
             self.logger.debug('on operation...')
             assert max_retry >= 0
             assert retry_interval >= 0
             for _ in range(max_retry):
                 _handle_warning_info()
+                _handle_level_up()
                 if self._is_template_on_screen('operation/common/operation_finished_flag'):
+                    self._wait(self.BASE_DELAY * 2)
+                    _handle_level_up()
                     self._wait(self.BASE_DELAY)
                     self._wait_until_screen_stable(max_check=15, check_interval=1)
                     self.logger.debug('finished interface:', self.player.screenshot())
@@ -535,7 +619,7 @@ class Operator(object):
 
     @_collect_warning_info(TimeoutError)
     def receive_rewards(self, max_try=50):
-        def _receive_rewards():
+        def _receive_v1():
             for _ in range(max_try):
                 self._wait_until_screen_stable(max_check=10, check_interval=1)
                 if self._is_template_on_screen('reward/报酬已领取'):
@@ -553,20 +637,32 @@ class Operator(object):
             else:
                 raise TimeoutError('time out receiving awards')
 
+        def _receive_v2():
+            if self._is_template_on_screen('reward/收集全部'):
+                self._click_template('reward/收集全部')
+                self._wait_until_screen_stable(max_check=10, check_interval=1)
+                if self._is_template_on_screen('reward/获得物资'):
+                    self._click_template('reward/获得物资')
+                else:
+                    raise UnknownInterface
+
+        def _receive():
+            _receive_v2()
+
         self.logger.debug('receiving rewards...')
         if not self._is_template_on_screen('navigate/main_panel/main_panel_loaded_flag'):
             raise InvalidInitialInterface
         self._click_template('reward/任务')
         self._wait_until_screen_stable(max_check=5, check_interval=1)
-        # 日常任务
+        # daily
         self._click_pos('reward/日常任务')
         self._wait_until_screen_stable(max_check=5, check_interval=1)
-        _receive_rewards()
+        _receive()
         self.logger.debug('received 日常任务')
-        # 周常任务
+        # weekly
         self._click_pos('reward/周常任务')
         self._wait_until_screen_stable(max_check=5, check_interval=1)
-        _receive_rewards()
+        _receive()
         self.logger.debug('received 周常任务')
         self.logger.debug('rewards received')
 
@@ -1071,7 +1167,3 @@ class Operator(object):
     #     interllect = baidu_ocr(loc, self.APP_ID, self.API_KEY, self.SECRECT_KEY)
     #     print(interllect)
     #     return interllect
-
-
-class ArknightsException(Exception):
-    pass

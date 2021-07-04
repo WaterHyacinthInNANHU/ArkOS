@@ -14,5 +14,37 @@
             49
         ],
         "timestamp": "2021-05-16-13:54:50"
+    },
+    "\u6570\u636e\u5df2\u66f4\u65b0": {
+        "location": [
+            961.0,
+            496.0
+        ],
+        "resolution": [
+            1920,
+            1080
+        ],
+        "path": "common/\u6570\u636e\u5df2\u66f4\u65b0.png",
+        "size": [
+            504,
+            96
+        ],
+        "timestamp": "2021-07-03-10:59:28"
+    },
+    "confirm": {
+        "location": [
+            959.5,
+            760.0
+        ],
+        "resolution": [
+            1920,
+            1080
+        ],
+        "path": "common/confirm.png",
+        "size": [
+            103,
+            86
+        ],
+        "timestamp": "2021-07-03-11:00:09"
     }
 }

@@ -1,6 +1,6 @@
 from datetime import datetime
 from util.logger import *
-from util.HTMLLogger import VisualLogger, pil2b64
+from util.HTMLLogger import VisualLogger, _pil2b64
 from config import SRC_PATH
 from PIL import Image
 # logger = DefaultLogger(__name__)

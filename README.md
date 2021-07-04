@@ -13,9 +13,9 @@ Client part of Arknights-Operator-System.
 
 ## Acknowledgement
 
-- The *ADB connecting module* and *stage_ocr module* are borrowed from [@ninthDevilHAUNSTER](https://github.com/ninthDevilHAUNSTER) repo : [ArknightsAutoHelper](https://github.com/ninthDevilHAUNSTER/ArknightsAutoHelper)
+- The *ADB connecting* and *stage_ocr* modules are borrowed from [@ninthDevilHAUNSTER](https://github.com/ninthDevilHAUNSTER) repo : [ArknightsAutoHelper](https://github.com/ninthDevilHAUNSTER/ArknightsAutoHelper)
 
-- This project was created with the help of my friends:
+- My friends:
   - [@qxdn](https://github.com/qxdn)
   - [@zyh802](https://github.com/zyh802)
 

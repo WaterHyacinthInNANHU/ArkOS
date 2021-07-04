@@ -159,38 +159,6 @@
         ],
         "timestamp": "2021-05-31-11:48:44"
     },
-    "restore_sanity_confirm": {
-        "location": [
-            1633.5,
-            862.5
-        ],
-        "resolution": [
-            1920,
-            1080
-        ],
-        "path": "operation/common/restore_sanity_confirm.png",
-        "size": [
-            71,
-            63
-        ],
-        "timestamp": "2021-05-31-11:49:09"
-    },
-    "restore_sanity_cancel": {
-        "location": [
-            1166.0,
-            865.0
-        ],
-        "resolution": [
-            1920,
-            1080
-        ],
-        "path": "operation/common/restore_sanity_cancel.png",
-        "size": [
-            74,
-            72
-        ],
-        "timestamp": "2021-05-31-11:49:25"
-    },
     "operation_finished_flag_1": {
         "location": [
             1394.5,
@@ -206,5 +174,101 @@
             29
         ],
         "timestamp": "2021-06-01-17:24:05"
+    },
+    "refill_sanity_confirm": {
+        "location": [
+            1633.5,
+            862.5
+        ],
+        "resolution": [
+            1920,
+            1080
+        ],
+        "path": "operation/common/refill_sanity_confirm.png",
+        "size": [
+            71,
+            63
+        ],
+        "timestamp": "2021-05-31-11:49:09"
+    },
+    "refill_sanity_cancel": {
+        "location": [
+            1166.0,
+            865.0
+        ],
+        "resolution": [
+            1920,
+            1080
+        ],
+        "path": "operation/common/refill_sanity_cancel.png",
+        "size": [
+            74,
+            72
+        ],
+        "timestamp": "2021-05-31-11:49:25"
+    },
+    "refill_with_grindstone_flag": {
+        "location": [
+            1667.5,
+            154.5
+        ],
+        "resolution": [
+            1920,
+            1080
+        ],
+        "path": "operation/common/refill_with_grindstone_flag.png",
+        "size": [
+            317,
+            67
+        ],
+        "timestamp": "2021-06-18-22:40:48"
+    },
+    "refill_with_potion_flag": {
+        "location": [
+            1174.0,
+            160.0
+        ],
+        "resolution": [
+            1920,
+            1080
+        ],
+        "path": "operation/common/refill_with_potion_flag.png",
+        "size": [
+            260,
+            68
+        ],
+        "timestamp": "2021-06-18-22:38:47"
+    },
+    "\u7b49\u7ea7\u63d0\u5347": {
+        "location": [
+            638.0,
+            563.0
+        ],
+        "resolution": [
+            1920,
+            1080
+        ],
+        "path": "operation/common/\u7b49\u7ea7\u63d0\u5347.png",
+        "size": [
+            142,
+            82
+        ],
+        "timestamp": "2021-07-03-10:17:14"
+    },
+    "\u7b49\u7ea7\u63d0\u5347_1": {
+        "location": [
+            1109.0,
+            527.0
+        ],
+        "resolution": [
+            1920,
+            1080
+        ],
+        "path": "operation/common/\u7b49\u7ea7\u63d0\u5347_1.png",
+        "size": [
+            226,
+            68
+        ],
+        "timestamp": "2021-07-03-10:18:06"
     }
 }

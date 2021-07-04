@@ -1,24 +1,24 @@
 from arknights.operator import Operator
 from util.logger import ConsoleLogger, DefaultLogger
-from util.HTMLLogger import VisualLogger
+from util.HTMLLogger import VisualLogger, DummyLogger
 import arknights
 import traceback
 from os.path import basename
-op = Operator(VisualLogger(basename(__file__)))
+# op = Operator(VisualLogger(basename(__file__), sub_logger=ConsoleLogger(basename(__file__))))
+op = Operator(DummyLogger(basename(__file__)))
 op.launch_and_connect_emulator()
+
+# op.launch_game()
+# op.login()
+
 # op.navigate_to_default_annihilation()
 # op.navigate_to_resources('粉碎防御', 'AP-5')
 try:
-    for _ in range(30):
-        if op.operate(mode=arknights.NORMAL_OPERATION) != arknights.SUCCESS:
+    for _ in range(50):
+        if op.operate(mode=arknights.NORMAL_OPERATION, auto_refill=arknights.DISABLED) != arknights.SUCCESS:
             break
-except Exception as e:
-    traceback.print_exc()
-
-try:
     op.navigate_to_main_panel()
     op.receive_rewards()
-except Exception:
+    op.close_emulator()
+except Exception as e:
     traceback.print_exc()
-
-op.close_emulator()

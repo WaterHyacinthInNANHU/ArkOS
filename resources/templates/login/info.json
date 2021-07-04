@@ -222,5 +222,69 @@
             37
         ],
         "timestamp": "2021-06-17-20:26:28"
+    },
+    "\u5ba2\u6237\u7aef\u5df2\u8fc7\u65f6": {
+        "location": [
+            958.5,
+            493.0
+        ],
+        "resolution": [
+            1920,
+            1080
+        ],
+        "path": "login/\u5ba2\u6237\u7aef\u5df2\u8fc7\u65f6.png",
+        "size": [
+            807,
+            114
+        ],
+        "timestamp": "2021-07-02-13:27:36"
+    },
+    "warning_confirm": {
+        "location": [
+            958.0,
+            757.0
+        ],
+        "resolution": [
+            1920,
+            1080
+        ],
+        "path": "login/warning_confirm.png",
+        "size": [
+            96,
+            92
+        ],
+        "timestamp": "2021-07-02-13:28:07"
+    },
+    "\u516c\u544a": {
+        "location": [
+            962.5,
+            822.5
+        ],
+        "resolution": [
+            1920,
+            1080
+        ],
+        "path": "login/\u516c\u544a.png",
+        "size": [
+            219,
+            65
+        ],
+        "timestamp": "2021-07-02-14:08:54"
+    },
+    "\u670d\u52a1\u5668\u76ee\u524d\u6682\u672a\u5f00\u653e": {
+        "location": [
+            962.5,
+            498.0
+        ],
+        "resolution": [
+            1920,
+            1080
+        ],
+        "path": "login/\u670d\u52a1\u5668\u76ee\u524d\u6682\u672a\u5f00\u653e.png",
+        "size": [
+            387,
+            98
+        ],
+        "timestamp": "2021-07-02-14:27:32"
     }
 }
