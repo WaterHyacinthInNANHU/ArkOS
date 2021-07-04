@@ -1,11 +1,12 @@
 from arknights.operator import Operator
 from util.logger import ConsoleLogger, DefaultLogger
-from util.HTMLLogger import VisualLogger, DummyLogger
+from util.VisualLogger import VisualLogger, DummyLogger
 import arknights
 import traceback
 from os.path import basename
-# op = Operator(VisualLogger(basename(__file__), sub_logger=ConsoleLogger(basename(__file__))))
-op = Operator(DummyLogger(basename(__file__)))
+logger = VisualLogger(basename(__file__))
+
+op = Operator(logger)
 op.launch_and_connect_emulator()
 
 # op.launch_game()
