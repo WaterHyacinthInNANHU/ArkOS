@@ -35,7 +35,7 @@ COLOR_PICKER = {'INFO': '#2ECC71', 'DEBUG': '#9B59B6', 'WARNING': '#F39C12', 'ER
 
 
 # init logging file and soup
-def get_logging_file() -> str:
+def get_logging_file(stack: int = 0) -> str:
     """
     get path of logging file
     :return: path in string
@@ -48,13 +48,16 @@ def get_logging_file() -> str:
         return _path
 
     t = datetime.today()
-    filename = t.strftime('%Y-%m-%d %H-%M-%S.%f.log.html')
+    if stack is 0:
+        filename = t.strftime('%Y-%m-%d %H-%M-%S.%f.log.html')
+    else:
+        filename = t.strftime('%Y-%m-%d %H-%M-%S.%f.log({}).html'.format(stack))
     path = join(_get_dir(str(t.year), t.strftime("%B"), str(t.day)), filename)
     if not isfile(path):
-        copyfile(join(_resource_path, 'log_temp_prefix.html'),
-                 path)
+        copyfile(join(_resource_path, 'log_temp_prefix.html'), path)
     else:
-        raise RuntimeError('log file already exists???')
+        # raise RuntimeError('log file already exists???')
+        path = get_logging_file(stack + 1)
     return path
 
 
