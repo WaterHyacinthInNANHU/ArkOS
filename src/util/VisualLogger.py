@@ -103,7 +103,7 @@ def _write_entry(msg: str, image: list or Image, msg_color: str = None):
             img_entry.div.append(img_tag)
         entry = img_entry
     if msg_color is not None:
-        entry['style'] = 'color:{};'.format(msg_color)
+        entry.a['style'] = 'color:{};'.format(msg_color)
     # add to soup
     _log(str(entry) + '\n')
 

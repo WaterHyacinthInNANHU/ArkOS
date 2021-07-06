@@ -4,7 +4,7 @@ from util.VisualLogger import VisualLogger, DummyLogger
 import arknights
 import traceback
 from os.path import basename
-logger = VisualLogger(basename(__file__))
+logger = VisualLogger(basename(__file__), sub_logger=DummyLogger(basename(__file__)))
 
 op = Operator(logger)
 op.launch_and_connect_emulator()
@@ -20,6 +20,7 @@ try:
             break
     op.navigate_to_main_panel()
     op.receive_rewards()
-    op.close_emulator()
 except Exception as e:
+    logger.error('error interface', op.player.screenshot())
     traceback.print_exc()
+op.close_emulator()
